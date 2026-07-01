@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4bbe482edf800648aec7d85637df382, type: 3}
+  m_Name: Iluminati
+  m_EditorClassIdentifier: Assembly-CSharp::Evolution.Assets.Creatures.CreatureStats
+  Sex: 0
+  MaxHealth: 100
+  Speed: 5
+  MaxHunger: 100
+  MaxThirst: 100
+  MaxEnergy: 100
+  Atractivess: 25
+  Inteligence: 25
+  HungerDrainRate: 0.5
+  ThirstDrainRate: 0.8
+  EnergyDrainRate: 0.3
+  SightRange: 10
+  MaxAliveTime: 80
+  HungerTreshHold: 25
+  ThirstTreshHold: 30
+  EnergyTreshHold: 10
+  Color: {r: 0, g: 0, b: 0, a: 0}
+  SightLayer:
+    serializedVersion: 2
+    m_Bits: 88
