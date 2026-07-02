@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Population Ledger — Simulation Telemetry</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#0e1512;
+    --paper:#eef0e6;
+    --line:#c9cdb8;
+    --moss:#3c5a45;
+    --moss-dim:#6b8271;
+    --amber:#c98a3a;
+    --blood:#a44a3f;
+    --slate:#3d5566;
+    --violet:#6a5a83;
+    --panel:#f6f7ef;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  @font-face{
+    font-family:'JetBrains Mono';
+    src: local('JetBrains Mono'), local('Menlo'), local('Consolas');
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--mono);
+  }
+  body{
+    min-height:100vh;
+  }
+
+  /* ---- Header / masthead ---- */
+  header{
+    padding:2.4rem clamp(1.2rem,4vw,3.5rem) 1.6rem;
+    border-bottom:1px solid #2a352d;
+    position:relative;
+  }
+  .eyebrow{
+    font-size:0.68rem;
+    letter-spacing:0.32em;
+    text-transform:uppercase;
+    color:var(--moss-dim);
+    margin-bottom:0.7rem;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(1.8rem,4vw,3rem);
+    margin:0 0 0.5rem 0;
+    letter-spacing:-0.01em;
+    color:var(--paper);
+  }
+  h1 em{ color:var(--amber); font-style:normal; }
+  .subhead{
+    color:#8f9686;
+    font-size:0.86rem;
+    max-width:56ch;
+    line-height:1.5;
+  }
+
+  /* ---- Load bar ---- */
+  .loadbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.9rem;
+    align-items:center;
+    margin-top:1.6rem;
+  }
+  .file-btn{
+    position:relative;
+    overflow:hidden;
+    display:inline-flex;
+    align-items:center;
+    gap:0.6rem;
+    background:var(--moss);
+    color:var(--paper);
+    border:1px solid var(--moss);
+    padding:0.6rem 1.1rem;
+    font-family:var(--mono);
+    font-size:0.78rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  .file-btn:hover{ background:#4a6e55; }
+  .file-btn:active{ transform:scale(0.98); }
+  .file-btn input[type=file]{
+    position:absolute; inset:0; opacity:0; cursor:pointer;
+  }
+  .status{
+    font-size:0.78rem;
+    color:#8f9686;
+  }
+  .status.ok{ color:var(--moss-dim); }
+  .status.err{ color:var(--blood); }
+  .demo-link{
+    font-size:0.78rem;
+    color:var(--amber);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+    background:none;
+    border:none;
+    font-family:var(--mono);
+    padding:0;
+  }
+
+  /* ---- Layout ---- */
+  main{
+    padding:1.8rem clamp(1.2rem,4vw,3.5rem) 3rem;
+    display:none;
+  }
+  main.visible{ display:block; }
+
+  .meta-strip{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:1px;
+    background:#2a352d;
+    border:1px solid #2a352d;
+    margin-bottom:2rem;
+  }
+  .meta-cell{
+    background:var(--ink);
+    padding:0.9rem 1rem;
+  }
+  .meta-cell .k{
+    font-size:0.62rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#75806e;
+    margin-bottom:0.3rem;
+  }
+  .meta-cell .v{
+    font-family:var(--serif);
+    font-size:1.3rem;
+    color:var(--paper);
+  }
+
+  /* ---- Selector row ---- */
+  .selector-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:0.8rem;
+    margin-bottom:0.9rem;
+    border-bottom:1px solid #2a352d;
+    padding-bottom:0.6rem;
+  }
+  .selector-row .label{
+    font-size:0.68rem;
+    letter-spacing:0.24em;
+    text-transform:uppercase;
+    color:var(--moss-dim);
+  }
+  .chip-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.4rem;
+  }
+  .chip{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    padding:0.35rem 0.7rem;
+    border:1px solid #384435;
+    background:transparent;
+    color:#a9af9d;
+    cursor:pointer;
+    user-select:none;
+    transition:all 0.12s ease;
+    white-space:nowrap;
+  }
+  .chip:hover{ border-color:var(--moss-dim); color:var(--paper); }
+  .chip.active{
+    background:var(--paper);
+    color:var(--ink);
+    border-color:var(--paper);
+  }
+  .chip .swatch{
+    display:inline-block;
+    width:7px; height:7px;
+    margin-right:0.4rem;
+    border-radius:50%;
+    vertical-align:middle;
+  }
+
+  /* ---- Chart grid ---- */
+  .chart-panel{
+    background:var(--panel);
+    color:var(--ink);
+    padding:1.4rem 1.4rem 0.6rem;
+    margin-bottom:1.6rem;
+    position:relative;
+  }
+  .chart-panel .panel-tag{
+    position:absolute;
+    top:1.4rem; right:1.4rem;
+    font-size:0.62rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#8f9686;
+  }
+  .chart-panel h2{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:1.05rem;
+    margin:0 0 0.9rem 0;
+    color:var(--ink);
+  }
+  .chart-wrap{
+    height:320px;
+    position:relative;
+  }
+
+  .grid-two{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.6rem;
+  }
+  @media (max-width:860px){
+    .grid-two{ grid-template-columns:1fr; }
+  }
+
+  /* ---- Population/gender split section ---- */
+  .split-panel .chart-wrap{ height:260px; }
+
+  footer{
+    padding:1.4rem clamp(1.2rem,4vw,3.5rem) 2rem;
+    color:#5a6354;
+    font-size:0.68rem;
+    letter-spacing:0.05em;
+    border-top:1px solid #2a352d;
+  }
+
+  /* signature: field-notes marginalia number, keyed to row count read from file */
+  .row-count-tag{
+    font-family:var(--serif);
+    font-style:italic;
+    color:var(--moss-dim);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Simulation Telemetry / Field Log</div>
+  <h1>Population Ledger — read at <em>t</em></h1>
+  <div class="subhead">Drop in the run's CSV export. Time sits on the horizontal axis throughout; every other tracked variable — vitals, drift rates, the birth/death balance — is yours to lay against it.</div>
+
+  <div class="loadbar">
+    <label class="file-btn">
+      <span>⤒ Load CSV</span>
+      <input type="file" id="fileInput" accept=".csv,text/csv">
+    </label>
+    <span id="status" class="status">No file loaded yet.</span>
+    <button class="demo-link" id="demoBtn">use sample row instead</button>
+  </div>
+</header>
+
+<main id="main">
+  <div class="meta-strip" id="metaStrip"></div>
+
+  <div class="selector-row">
+    <div class="label">Plot against time</div>
+    <div class="chip-group" id="chipGroup"></div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="panel-tag" id="mainPanelTag">selected series</div>
+    <h2>Selected series over time</h2>
+    <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+  </div>
+
+  <div class="grid-two">
+    <div class="chart-panel split-panel">
+      <div class="panel-tag">counts</div>
+      <h2>Births &amp; deaths</h2>
+      <div class="chart-wrap"><canvas id="bdChart"></canvas></div>
+    </div>
+    <div class="chart-panel split-panel">
+      <div class="panel-tag">counts</div>
+      <h2>Population by sex</h2>
+      <div class="chart-wrap"><canvas id="sexChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-panel">
+    <div class="panel-tag">rates</div>
+    <h2>Average drain rates</h2>
+    <div class="chart-wrap"><canvas id="drainChart"></canvas></div>
+  </div>
+</main>
+
+<footer>
+  Population Ledger — a small instrument for reading simulation CSVs. <span id="rowFooter" class="row-count-tag"></span>
+</footer>
+
+<script>
+(function(){
+  const PALETTE = {
+    Population:'#c98a3a', Births:'#3c5a45', Deaths:'#a44a3f',
+    AvgHealth:'#6a5a83', AvgSpeed:'#3d5566', AvgAtractivess:'#b06a9a',
+    AvgInteligence:'#4f7d9c', AvgSightRange:'#8a9a3e', AvgHungerDrainRate:'#c9a13a',
+    AvgThirstDrainRate:'#4a90a4', AvgEnergyDrainRate:'#a4664a',
+    MaleCount:'#3d5566', FemaleCount:'#b06a9a'
+  };
+  const DEFAULT_COLOR = '#6b8271';
+
+  const SAMPLE_CSV =
+`Time;Population;Births;Deaths;AvgHealth;AvgSpeed;AvgAtractivess;AvgInteligence;AvgSightRange;AvgHungerDrainRate;AvgThirstDrainRate;AvgEnergyDrainRate;MaleCount;FemaleCount
+5,0;258;258;0;100,05;5,00;25,03;25,02;9,92;0,497;0,798;0,296;111;147
+10,0;301;61;18;98,40;5,02;25,10;24,98;9,95;0,502;0,805;0,301;134;167
+15,0;340;58;19;97,10;5,05;25,20;25,05;9,97;0,509;0,812;0,305;150;190
+20,0;372;51;19;95,80;5,07;25,35;25,10;10,01;0,515;0,820;0,310;163;209
+25,0;398;44;18;94,50;5,10;25,50;25,18;10,04;0,520;0,828;0,314;175;223`;
+
+  let fileName = '';
+  let headers = [];
+  let rows = [];
+  let timeKey = 'Time';
+  let charts = {};
+  let activeSeries = new Set();
+
+  const fileInput = document.getElementById('fileInput');
+  const statusEl = document.getElementById('status');
+  const demoBtn = document.getElementById('demoBtn');
+  const main = document.getElementById('main');
+  const metaStrip = document.getElementById('metaStrip');
+  const chipGroup = document.getElementById('chipGroup');
+  const rowFooter = document.getElementById('rowFooter');
+
+  fileInput.addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if(!f) return;
+    fileName = f.name;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try{
+        parseAndRender(evt.target.result);
+      }catch(err){
+        setStatus('Could not parse "' + f.name + '" — ' + err.message, true);
+      }
+    };
+    reader.onerror = () => setStatus('Could not read file.', true);
+    reader.readAsText(f);
+  });
+
+  demoBtn.addEventListener('click', () => {
+    fileName = 'sample.csv';
+    parseAndRender(SAMPLE_CSV);
+  });
+
+  function setStatus(msg, isErr){
+    statusEl.textContent = msg;
+    statusEl.className = 'status' + (isErr ? ' err' : ' ok');
+  }
+
+  // Detects delimiter, handles European decimal commas (e.g. "5,0" -> 5.0)
+  // by only treating a comma as a decimal point when it's flanked by digits
+  // and not acting as the field delimiter itself.
+  function parseAndRender(text){
+    const lines = text.replace(/\r/g,'').split('\n').filter(l => l.trim().length > 0);
+    if(lines.length < 2) throw new Error('file needs a header row and at least one data row');
+
+    const delim = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+    headers = lines[0].split(delim).map(h => h.trim());
+
+    rows = lines.slice(1).map(line => {
+      const cells = line.split(delim);
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = toNumber(cells[i]);
+      });
+      return obj;
+    });
+
+    timeKey = headers.find(h => /^time$/i.test(h)) || headers[0];
+
+    setStatus('Loaded "' + fileName + '" — ' + rows.length + ' row' + (rows.length===1?'':'s') + ', ' + headers.length + ' columns.', false);
+    rowFooter.textContent = rows.length + ' observations logged, t = ' + rows[0][timeKey] + ' → ' + rows[rows.length-1][timeKey];
+
+    buildMeta();
+    buildChips();
+    renderAll();
+    main.classList.add('visible');
+  }
+
+  function toNumber(raw){
+    if(raw === undefined) return NaN;
+    let s = raw.trim();
+    if(s === '') return NaN;
+    // comma as decimal separator (digits on both sides), not thousands grouping
+    if(/^-?\d+,\d+$/.test(s)){
+      s = s.replace(',', '.');
+    }
+    const n = parseFloat(s);
+    return n;
+  }
+
+  function buildMeta(){
+    const last = rows[rows.length - 1];
+    const cells = [];
+    const totalBirths = rows.reduce((a,r) => a + (r.Births||0), 0);
+    const totalDeaths = rows.reduce((a,r) => a + (r.Deaths||0), 0);
+    cells.push(['Snapshots', rows.length]);
+    cells.push(['Latest t', fmt(last[timeKey])]);
+    if('Population' in last) cells.push(['Latest population', fmt(last.Population)]);
+    if('Births' in rows[0]) cells.push(['Total births', fmt(totalBirths)]);
+    if('Deaths' in rows[0]) cells.push(['Total deaths', fmt(totalDeaths)]);
+    if('MaleCount' in last && 'FemaleCount' in last){
+      const tot = (last.MaleCount||0) + (last.FemaleCount||0);
+      const pct = tot ? Math.round((last.FemaleCount/tot)*100) : 0;
+      cells.push(['Sex split (F)', pct + '%']);
+    }
+    metaStrip.innerHTML = cells.map(([k,v]) =>
+      `<div class="meta-cell"><div class="k">${k}</div><div class="v">${v}</div></div>`
+    ).join('');
+  }
+
+  function fmt(n){
+    if(typeof n !== 'number' || isNaN(n)) return '—';
+    return (Math.round(n*100)/100).toLocaleString();
+  }
+
+  function buildChips(){
+    const skip = new Set([timeKey, 'Births','Deaths','MaleCount','FemaleCount',
+      'AvgHungerDrainRate','AvgThirstDrainRate','AvgEnergyDrainRate']);
+    const plottable = headers.filter(h => h !== timeKey);
+    activeSeries = new Set();
+    // default selection: Population + AvgHealth if present, else first two
+    const defaults = plottable.filter(h => h === 'Population' || h === 'AvgHealth');
+    (defaults.length ? defaults : plottable.slice(0,2)).forEach(h => activeSeries.add(h));
+
+    chipGroup.innerHTML = plottable.map(h => {
+      const color = PALETTE[h] || DEFAULT_COLOR;
+      return `<button class="chip" data-key="${h}"><span class="swatch" style="background:${color}"></span>${h}</button>`;
+    }).join('');
+
+    chipGroup.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        if(activeSeries.has(key)) activeSeries.delete(key);
+        else activeSeries.add(key);
+        syncChips();
+        renderMainChart();
+      });
+    });
+    syncChips();
+  }
+
+  function syncChips(){
+    chipGroup.querySelectorAll('.chip').forEach(btn => {
+      btn.classList.toggle('active', activeSeries.has(btn.dataset.key));
+    });
+  }
+
+  const commonScales = (label) => ({
+    x:{
+      title:{ display:true, text: timeKey, color:'#5a6354', font:{family:'monospace', size:11} },
+      ticks:{ color:'#6b7060', font:{family:'monospace', size:10} },
+      grid:{ color:'#e2e4d6' }
+    },
+    y:{
+      title: label ? { display:true, text:label, color:'#5a6354', font:{family:'monospace', size:11} } : undefined,
+      ticks:{ color:'#6b7060', font:{family:'monospace', size:10} },
+      grid:{ color:'#e2e4d6' }
+    }
+  });
+
+  function destroy(key){
+    if(charts[key]){ charts[key].destroy(); delete charts[key]; }
+  }
+
+  function renderAll(){
+    renderMainChart();
+    renderBDChart();
+    renderSexChart();
+    renderDrainChart();
+  }
+
+  function renderMainChart(){
+    destroy('main');
+    const ctx = document.getElementById('mainChart');
+    const labels = rows.map(r => r[timeKey]);
+    const keys = Array.from(activeSeries);
+    document.getElementById('mainPanelTag').textContent = keys.length + ' series';
+    const datasets = keys.map(k => ({
+      label:k,
+      data: rows.map(r => r[k]),
+      borderColor: PALETTE[k] || DEFAULT_COLOR,
+      backgroundColor: PALETTE[k] || DEFAULT_COLOR,
+      borderWidth:2,
+      pointRadius:2,
+      pointHoverRadius:4,
+      tension:0.25,
+      spanGaps:true
+    }));
+    charts.main = new Chart(ctx, {
+      type:'line',
+      data:{ labels, datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ position:'top', labels:{ color:'#2b342c', font:{family:'monospace', size:11}, usePointStyle:true } },
+          tooltip:{ titleFont:{family:'monospace'}, bodyFont:{family:'monospace'} }
+        },
+        scales: commonScales(keys.length===1 ? keys[0] : null)
+      }
+    });
+  }
+
+  function renderBDChart(){
+    destroy('bd');
+    if(!('Births' in rows[0]) && !('Deaths' in rows[0])) return;
+    const ctx = document.getElementById('bdChart');
+    const labels = rows.map(r => r[timeKey]);
+    charts.bd = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          { label:'Births', data: rows.map(r=>r.Births), borderColor: PALETTE.Births, backgroundColor: PALETTE.Births+'33', fill:true, borderWidth:2, pointRadius:2, tension:0.2 },
+          { label:'Deaths', data: rows.map(r=>r.Deaths), borderColor: PALETTE.Deaths, backgroundColor: PALETTE.Deaths+'33', fill:true, borderWidth:2, pointRadius:2, tension:0.2 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ position:'top', labels:{ color:'#2b342c', font:{family:'monospace', size:11}, usePointStyle:true } } },
+        scales: commonScales(null)
+      }
+    });
+  }
+
+  function renderSexChart(){
+    destroy('sex');
+    if(!('MaleCount' in rows[0]) && !('FemaleCount' in rows[0])) return;
+    const ctx = document.getElementById('sexChart');
+    const labels = rows.map(r => r[timeKey]);
+    charts.sex = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          { label:'Male', data: rows.map(r=>r.MaleCount), borderColor: PALETTE.MaleCount, backgroundColor: PALETTE.MaleCount+'22', fill:true, borderWidth:2, pointRadius:2, tension:0.2 },
+          { label:'Female', data: rows.map(r=>r.FemaleCount), borderColor: PALETTE.FemaleCount, backgroundColor: PALETTE.FemaleCount+'22', fill:true, borderWidth:2, pointRadius:2, tension:0.2 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ position:'top', labels:{ color:'#2b342c', font:{family:'monospace', size:11}, usePointStyle:true } } },
+        scales: commonScales(null)
+      }
+    });
+  }
+
+  function renderDrainChart(){
+    destroy('drain');
+    const drainKeys = ['AvgHungerDrainRate','AvgThirstDrainRate','AvgEnergyDrainRate'].filter(k => k in rows[0]);
+    if(!drainKeys.length) return;
+    const ctx = document.getElementById('drainChart');
+    const labels = rows.map(r => r[timeKey]);
+    charts.drain = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels,
+        datasets: drainKeys.map(k => ({
+          label:k, data: rows.map(r=>r[k]),
+          borderColor: PALETTE[k] || DEFAULT_COLOR,
+          backgroundColor: PALETTE[k] || DEFAULT_COLOR,
+          borderWidth:2, pointRadius:2, tension:0.25
+        }))
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ position:'top', labels:{ color:'#2b342c', font:{family:'monospace', size:11}, usePointStyle:true } } },
+        scales: commonScales('rate / tick')
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -87,7 +87,7 @@ namespace Evolution.Creatures
         {
             CurrentPopulation = value;
         }
-        private void Start()
+        protected virtual void Start()
         {
             SetUpStats();
             GameManager.Instance.OnPause += DisableSimulation;
@@ -142,7 +142,7 @@ namespace Evolution.Creatures
             int sameColorBost = 0;
             if(colorDiff <= 0.2f)
             {
-                sameColorBost = 20;
+                sameColorBost = 8;
             }
             else if(colorDiff > 0.2f && colorDiff <= 0.8)
             {
@@ -196,11 +196,13 @@ namespace Evolution.Creatures
             MutateChild(ref offSpringStats);
 
             offSpringStats.Color = new Color((mom.Stats.Color.r + dad.Stats.Color.r)/2, (mom.Stats.Color.g + dad.Stats.Color.g) / 2, (mom.Stats.Color.b + dad.Stats.Color.b) / 2);
+            offSpringStats.SightLayer = mom.Stats.SightLayer;
             var child = Instantiate<BaseCreature>(_selfPrefab);
             child.SetPopulation((Mathf.Max(creature2Population, creature1Population) + 1));
             child.Stats = offSpringStats;
             child.transform.position = transform.position;
-            child.SetColor(Stats.Color);
+
+            child.SetColor(offSpringStats.Color);
             return true;
         }
         public virtual void SetHasReproduced(bool value)

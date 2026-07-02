@@ -23,8 +23,8 @@ MonoBehaviour:
   HungerDrainRate: 0.4
   ThirstDrainRate: 0.5
   EnergyDrainRate: 0.3
-  SightRange: 10
-  MaxAliveTime: 60
+  SightRange: 15
+  MaxAliveTime: 90
   HungerTreshHold: 55
   ThirstTreshHold: 30
   EnergyTreshHold: 10

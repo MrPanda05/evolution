@@ -1,11 +1,8 @@
 using Evolution.Commons.Components;
 using Evolution.Commons.Managers;
-using Evolution.Commons.StateMachine;
-using Evolution.Neural;
 using Evolution.Resources;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Evolution.Creatures
@@ -22,7 +19,7 @@ namespace Evolution.Creatures
         [SerializeField]
         private TimerComponent _hungerTimer, _energyTimer, _thirstTimer, _mateTimer;
 
-        private void Start()
+        protected override void Start()
         {
             SetUpStats();
             GameManager.Instance.OnPause += DisableSimulation;
@@ -93,18 +90,22 @@ namespace Evolution.Creatures
                 HungerComponent.DecreaseHunger(Stats.HungerDrainRate);
                 ThirstComponent.DecreaseThirst(Stats.ThirstDrainRate);
                 EnergyComponent.ReduceEnergy(Stats.EnergyDrainRate);
+                if(!IsHungry && !IsThirsty && !IsSleepy && !IsDead)
+                {
+                    HealthComponent.Heal(0.5f);
+                }
                 //Start damage timer for each crucial stat
                 if (IsThirsty && !_thirstTimer.IsRunning)
                 {
-                    _thirstTimer.StartTimer(Stats.ThirstDrainRate * 2);
+                    _thirstTimer.StartTimer(Stats.ThirstDrainRate);
                 }
                 if (IsHungry && !_hungerTimer.IsRunning)
                 {
-                    _hungerTimer.StartTimer(Stats.HungerDrainRate * 2);
+                    _hungerTimer.StartTimer(Stats.HungerDrainRate);
                 }
                 if (IsSleepy && !_energyTimer.IsRunning && IsSleeping)
                 {
-                    _energyTimer.StartTimer(Stats.EnergyDrainRate * 2);
+                    _energyTimer.StartTimer(Stats.EnergyDrainRate);
                 }
                 if (!IsSleeping)
                 {

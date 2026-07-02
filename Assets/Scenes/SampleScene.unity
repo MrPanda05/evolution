@@ -392,7 +392,7 @@ MonoBehaviour:
   - {fileID: 2773565184400081461, guid: a1131d663be01f84981bacddd3e80fbd, type: 3}
   - {fileID: 2964401903666135491, guid: 58d7396b41011b945bfdc51235378573, type: 3}
   _spawnRadius: 300
-  _maxPopulation: 250
+  _maxPopulation: 100
   _maxResourcesPopulation: 60
 --- !u!4 &1013846403
 Transform:
@@ -486,6 +486,9 @@ MonoBehaviour:
   _sampleIntervalSeconds: 5
   _fileName: evolution_log.csv
   _writeIncrementally: 1
+  population: 0
+  maleCount: 0
+  femaleCount: 0
 --- !u!4 &1848329355
 Transform:
   m_ObjectHideFlags: 0

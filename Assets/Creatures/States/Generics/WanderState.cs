@@ -2,7 +2,6 @@ using Evolution.Commons.Components;
 using Evolution.Commons.Managers;
 using Evolution.Commons.StateMachine;
 using Evolution.Resources;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace Evolution.Creatures.States.Generics
