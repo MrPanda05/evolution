@@ -30,6 +30,9 @@ namespace Evolution
         private int _deaths;
         private bool _headerWritten;
         private string _filePath;
+        public int population;
+        public int maleCount;
+        public int femaleCount;
 
         private static readonly string[] Header =
         {
@@ -78,7 +81,7 @@ namespace Evolution
         private void Sample()
         {
             var creatures = CreatureRegistry.All;
-            int population = creatures.Count;
+            population = creatures.Count;
 
             float avgHealth = 0, avgSpeed = 0, avgAtractivess = 0, avgInteligence = 0;
             float avgSightRange = 0, avgHungerDrain = 0, avgThirstDrain = 0, avgEnergyDrain = 0;
@@ -107,6 +110,8 @@ namespace Evolution
                 avgHungerDrain /= population;
                 avgThirstDrain /= population;
                 avgEnergyDrain /= population;
+                maleCount = males;
+                femaleCount = females;
             }
 
             var row = new[]
@@ -141,10 +146,10 @@ namespace Evolution
                 {
                     if (!_headerWritten && new FileInfo(_filePath).Length == 0)
                     {
-                        writer.WriteLine(string.Join(",", Header));
+                        writer.WriteLine(string.Join(";", Header));
                     }
                     _headerWritten = true;
-                    writer.WriteLine(string.Join(",", row));
+                    writer.WriteLine(string.Join(";", row));
                 }
             }
             catch (Exception e)

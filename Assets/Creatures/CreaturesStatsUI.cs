@@ -6,7 +6,7 @@ namespace Evolution.Creatures
     public class CreaturesStatsUI : MonoBehaviour
     {
         [SerializeField]
-        private TextMeshProUGUI _healthUI, _energyUI, _hungerUI, _thirstUI, _sexUI, _speedUI, _stateUI;
+        private TextMeshProUGUI _healthUI, _energyUI, _hungerUI, _thirstUI, _sexUI, _speedUI, _stateUI, _populationUI;
 
         [SerializeField]
         private BaseCreature _myCreature;
@@ -16,6 +16,7 @@ namespace Evolution.Creatures
             _sexUI.text = "Sex: " + (_myCreature.IsFemale ? "F" : "M");
             _speedUI.text = $"{_myCreature.Stats.Speed}";
             _stateUI.text = _myCreature.Fsm.CurrentState.StateName;
+            _populationUI.text = _myCreature.CurrentPopulation.ToString();
         }
 
         private void OnEnable()

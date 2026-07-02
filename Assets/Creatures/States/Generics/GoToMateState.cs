@@ -64,28 +64,26 @@ namespace Evolution.Creatures.States.Generics
             }
             if (_hasReachTarget)
             {
-                bool success = false;
-                if (_creature.IsFemale)
-                {
-                    success = _creature.Reproduce(_creature, _targetMate, _targetMate.CurrentPopulation, _creature.CurrentPopulation);
-                }
-                else
-                {
-                    success = _creature.Reproduce(_targetMate, _creature, _creature.CurrentPopulation, _targetMate.CurrentPopulation);
-                }
+                bool success = _creature.Reproduce(_creature, _targetMate, _targetMate.CurrentPopulation, _creature.CurrentPopulation);
                 if (success)
                 {
                     _creature.SetHasReproduced(true);
                     _targetMate.SetHasReproduced(true);
-                    _creature.HungerComponent.DecreaseHunger(10);
-                    _creature.ThirstComponent.DecreaseThirst(10);
-                    _creature.EnergyComponent.ReduceEnergy(10);
-                    _targetMate.HungerComponent.DecreaseHunger(10);
-                    _targetMate.ThirstComponent.DecreaseThirst(10);
-                    _targetMate.EnergyComponent.ReduceEnergy(10);
+                    //_creature.HungerComponent.DecreaseHunger(15);
+                    //_creature.ThirstComponent.DecreaseThirst(5);
+                    //_creature.EnergyComponent.ReduceEnergy(15);
+                    //_targetMate.HungerComponent.DecreaseHunger(15);
+                    //_targetMate.ThirstComponent.DecreaseThirst(5);
+                    //_targetMate.EnergyComponent.ReduceEnergy(10);
                 }
                 else
                 {
+                    _creature.HungerComponent.DecreaseHunger(20);
+                    _creature.ThirstComponent.DecreaseThirst(15);
+                    _creature.EnergyComponent.ReduceEnergy(20);
+                    _targetMate.HungerComponent.DecreaseHunger(5);
+                    _targetMate.ThirstComponent.DecreaseThirst(2);
+                    _targetMate.EnergyComponent.ReduceEnergy(5);
                     _excludeCreatures.Add(_targetMate);
                 }
                 StateMachine.ChangeState("WanderState");

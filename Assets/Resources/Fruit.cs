@@ -8,6 +8,8 @@ namespace Evolution.Resources
     [RequireComponent(typeof(TimerComponent))]
     public class Fruit : MonoBehaviour, IConsumable
     {
+        [SerializeField]
+        private int _minRangeFruit, _maxRangeFruit;
         private int _maxFruits = 10;
         private int _currentFruits = 0;
         public event Action OnCosume;
@@ -29,11 +31,11 @@ namespace Evolution.Resources
         }
         private void Start()
         {
-            _maxFruits = UnityEngine.Random.Range(10, 25);
+            _maxFruits = UnityEngine.Random.Range(_minRangeFruit, _maxRangeFruit);
             _currentFruits = _maxFruits;
             float radius = UnityEngine.Random.Range(4f, 10f);
             transform.localScale = new Vector3(radius, radius);
-            _regrowTimer.StartTimer(UnityEngine.Random.Range(5f, 15f));
+            _regrowTimer.StartTimer(UnityEngine.Random.Range(5f, 20f));
         }
         public void Consume()
         {

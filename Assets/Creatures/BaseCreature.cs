@@ -122,12 +122,37 @@ namespace Evolution.Creatures
             throw new NotImplementedException();
         }
 
-        public virtual bool Reproduce(ICreature mom, ICreature dad, int dadPopulation, int momPopulation)
+        public virtual bool Reproduce(ICreature creature1, ICreature creature2, int creature1Population, int creature2Population)
         {
 
-
-            bool dadWants = GameManager.Instance.RollDice((int)mom.Stats.Atractivess);
-            bool momWants = GameManager.Instance.RollDice((int)dad.Stats.Atractivess);
+            ICreature mom = null;
+            ICreature dad = null;
+            if (creature1.Stats.Sex == creature2.Stats.Sex) return false;
+            if (creature1.Stats.Sex)
+            {
+                mom = creature1;
+                dad = creature2;
+            }
+            else
+            {
+                mom = creature2;
+                dad = creature1;
+            }
+            var colorDiff = Vector4.Distance(mom.Stats.Color, dad.Stats.Color);
+            int sameColorBost = 0;
+            if(colorDiff <= 0.2f)
+            {
+                sameColorBost = 20;
+            }
+            else if(colorDiff > 0.2f && colorDiff <= 0.8)
+            {
+                sameColorBost = 0;
+            }else
+            {
+                sameColorBost = -15;
+            }
+                bool dadWants = GameManager.Instance.RollDice((int)mom.Stats.Atractivess + sameColorBost);
+            bool momWants = GameManager.Instance.RollDice((int)dad.Stats.Atractivess + sameColorBost);
             //Second Chance for dad
             if (!momWants && dadWants)
             {
@@ -172,7 +197,7 @@ namespace Evolution.Creatures
 
             offSpringStats.Color = new Color((mom.Stats.Color.r + dad.Stats.Color.r)/2, (mom.Stats.Color.g + dad.Stats.Color.g) / 2, (mom.Stats.Color.b + dad.Stats.Color.b) / 2);
             var child = Instantiate<BaseCreature>(_selfPrefab);
-            child.SetPopulation((Mathf.Max(dadPopulation, momPopulation) + 1));
+            child.SetPopulation((Mathf.Max(creature2Population, creature1Population) + 1));
             child.Stats = offSpringStats;
             child.transform.position = transform.position;
             child.SetColor(Stats.Color);
@@ -194,6 +219,7 @@ namespace Evolution.Creatures
         {
             _canvas.enabled = false;
         }
+        //Used for the first generation
         public void RandomizeAllStats()
         {
             Stats.RandomSex();
@@ -204,20 +230,22 @@ namespace Evolution.Creatures
 
             Stats.Atractivess = Stats.Atractivess + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
             Stats.Inteligence = Stats.Inteligence + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
-            Stats.SightRange = Stats.SightRange + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
 
-            Stats.HungerDrainRate = Stats.HungerDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            Stats.ThirstDrainRate = Stats.ThirstDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            Stats.EnergyDrainRate = Stats.EnergyDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            Stats.SightRange = Stats.SightRange + (GameManager.Instance.RollDice(35) ? UnityEngine.Random.Range(-5f, 10f) : 0);
 
-            Stats.HungerTreshHold = Stats.HungerTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            Stats.ThirstTreshHold = Stats.ThirstTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            Stats.EnergyTreshHold = Stats.EnergyTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            Stats.HungerDrainRate = Stats.HungerDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            Stats.ThirstDrainRate = Stats.ThirstDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            Stats.EnergyDrainRate = Stats.EnergyDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+
+            Stats.HungerTreshHold = Stats.HungerTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            Stats.ThirstTreshHold = Stats.ThirstTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            Stats.EnergyTreshHold = Stats.EnergyTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
 
             Stats.Color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-            Stats.Speed = Stats.Speed + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            //Speed is diffent
+            Stats.Speed = Stats.Speed + (GameManager.Instance.RollDice(70) ? UnityEngine.Random.Range(-1f, 5f) : 0);
 
-            Stats.MaxAliveTime = Stats.MaxAliveTime + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
+            Stats.MaxAliveTime = Stats.MaxAliveTime + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 10f) : 0);
             _spriteRenderer.color = Stats.Color;
         }
         public void MutateChild(ref CreatureStats stats)
@@ -230,19 +258,19 @@ namespace Evolution.Creatures
 
             stats.Atractivess = stats.Atractivess + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
             stats.Inteligence = stats.Inteligence + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
-            stats.SightRange = stats.SightRange + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
+            stats.SightRange = stats.SightRange + (GameManager.Instance.RollDice(20) ? UnityEngine.Random.Range(-5f, 10f) : 0);
 
-            stats.HungerDrainRate = stats.HungerDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            stats.ThirstDrainRate = stats.ThirstDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            stats.EnergyDrainRate = stats.EnergyDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            stats.HungerDrainRate = stats.HungerDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            stats.ThirstDrainRate = stats.ThirstDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            stats.EnergyDrainRate = stats.EnergyDrainRate + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
 
-            stats.HungerTreshHold = stats.HungerTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            stats.ThirstTreshHold = stats.ThirstTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
-            stats.EnergyTreshHold = stats.EnergyTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            stats.HungerTreshHold = stats.HungerTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            stats.ThirstTreshHold = stats.ThirstTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
+            stats.EnergyTreshHold = stats.EnergyTreshHold + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.02f, 0.8f) : 0);
 
-            stats.Speed = stats.Speed + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-0.2f, 0.2f) : 0);
+            stats.Speed = stats.Speed + (GameManager.Instance.RollDice(25) ? UnityEngine.Random.Range(-0.02f, 10f) : 0);
 
-            stats.MaxAliveTime = stats.MaxAliveTime + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 5f) : 0);
+            stats.MaxAliveTime = stats.MaxAliveTime + (GameManager.Instance.RollDice(10) ? UnityEngine.Random.Range(-5f, 10f) : 0);
         }
 
         public virtual void Reproduce()

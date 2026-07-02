@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: Iluminati
   m_EditorClassIdentifier: Assembly-CSharp::Evolution.Assets.Creatures.CreatureStats
   Sex: 0
-  MaxHealth: 100
+  MaxHealth: 110
   Speed: 5
   MaxHunger: 100
   MaxThirst: 100
   MaxEnergy: 100
-  Atractivess: 25
-  Inteligence: 25
-  HungerDrainRate: 0.5
-  ThirstDrainRate: 0.8
+  Atractivess: 35
+  Inteligence: 35
+  HungerDrainRate: 0.4
+  ThirstDrainRate: 0.5
   EnergyDrainRate: 0.3
   SightRange: 10
-  MaxAliveTime: 80
-  HungerTreshHold: 25
+  MaxAliveTime: 60
+  HungerTreshHold: 55
   ThirstTreshHold: 30
   EnergyTreshHold: 10
   Color: {r: 0, g: 0, b: 0, a: 0}

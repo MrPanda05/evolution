@@ -107,7 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fcc6804121ae6547b2ad70994699ed7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Evolution.Resources.Fruit
-  _regrowTimer: {fileID: 0}
+  _minRangeFruit: 20
+  _maxRangeFruit: 40
+  _regrowTimer: {fileID: 975479314504317819}
 --- !u!114 &975479314504317819
 MonoBehaviour:
   m_ObjectHideFlags: 0
