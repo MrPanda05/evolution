@@ -1,3 +1,4 @@
+using Evolution.Commons.Managers;
 using Evolution.Creatures;
 using UnityEngine;
 
@@ -17,12 +18,6 @@ namespace Evolution.Simulation
         private int _maxPopulation = 100;
         [SerializeField]
         private int _maxResourcesPopulation = 100;
-
-        private void Start()
-        {
-            SpawnResources();
-            SpawnCreatures();
-        }
 
         private void SpawnCreatures()
         {
@@ -49,5 +44,29 @@ namespace Evolution.Simulation
                 }
             }
         }
+        public void StartSimulation(int population, int resource, int radius)
+        {
+            foreach (var item in _resources)
+            {
+                int count = 0;
+                for (count = 0; count < population; count++)
+                {
+                    var instance = Instantiate(item);
+                    instance.gameObject.transform.position = new Vector3(Random.Range(-radius, radius + 1), Random.Range(-radius, radius + 1), 0);
+                }
+            }
+            foreach (var item in _creatures)
+            {
+                int count = 0;
+                for (count = 0; count < population; count++)
+                {
+                    var instance = Instantiate(item);
+                    instance.RandomizeAllStats();
+                    instance.gameObject.transform.position = new Vector3(Random.Range(-radius, radius + 1), Random.Range(-radius, radius + 1), 0);
+                }
+            }
+            GameManager.Instance.IsSimulationRunning = true;
+        }
+
     }
 }

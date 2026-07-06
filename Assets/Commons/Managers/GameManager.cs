@@ -7,6 +7,7 @@ namespace Evolution.Commons.Managers
     {
         public static GameManager Instance { get; private set; }
         public bool IsPaused;
+        public bool IsSimulationRunning = false;
 
         public event Action OnPause;
         public event Action OnUnPause;

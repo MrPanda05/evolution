@@ -1,3 +1,4 @@
+using Evolution.Commons.Managers;
 using Evolution.Creatures;
 using System;
 using System.Collections.Generic;
@@ -71,18 +72,18 @@ namespace Evolution
 
         private void Update()
         {
+            if (!GameManager.Instance.IsSimulationRunning) return;
             _timer += Time.deltaTime;
             if (_timer < _sampleIntervalSeconds) return;
 
             _timer = 0f;
             Sample();
+            population = CreatureRegistry.All.Count;
         }
 
         private void Sample()
         {
             var creatures = CreatureRegistry.All;
-            population = creatures.Count;
-
             float avgHealth = 0, avgSpeed = 0, avgAtractivess = 0, avgInteligence = 0;
             float avgSightRange = 0, avgHungerDrain = 0, avgThirstDrain = 0, avgEnergyDrain = 0;
             int males = 0, females = 0;

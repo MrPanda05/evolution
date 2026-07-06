@@ -140,18 +140,19 @@ namespace Evolution.Creatures
             }
             var colorDiff = Vector4.Distance(mom.Stats.Color, dad.Stats.Color);
             int sameColorBost = 0;
-            if(colorDiff <= 0.2f)
+            if (colorDiff <= 0.2f)
             {
                 sameColorBost = 8;
             }
-            else if(colorDiff > 0.2f && colorDiff <= 0.8)
+            else if (colorDiff > 0.2f && colorDiff <= 0.8)
             {
                 sameColorBost = 0;
-            }else
+            }
+            else
             {
                 sameColorBost = -15;
             }
-                bool dadWants = GameManager.Instance.RollDice((int)mom.Stats.Atractivess + sameColorBost);
+            bool dadWants = GameManager.Instance.RollDice((int)mom.Stats.Atractivess + sameColorBost);
             bool momWants = GameManager.Instance.RollDice((int)dad.Stats.Atractivess + sameColorBost);
             //Second Chance for dad
             if (!momWants && dadWants)
